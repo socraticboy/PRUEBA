@@ -15,14 +15,30 @@ github_repo: https://github.com/socraticboy/INDICADORES_VENTAS
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(pacman)
-pacman::p_load(terra, sf, fs, hablar, gcookbook, plotly, extrafont, RColorBrewer, rmapshaper, readxl, glue, hrbrthemes, tidyverse, leaflet, htmltools, leaflet.extras, DT, paletteer, packcircles, viridis, ggiraph)
+pacman::p_load(terra, sf, fs, hablar, gcookbook, plotly, extrafont,
+               RColorBrewer, rmapshaper, readxl, glue, hrbrthemes,
+               tidyverse, leaflet, htmltools, leaflet.extras, DT,
+               paletteer, packcircles, viridis, ggiraph, googlesheets4)
 ```
 
 
 
 ```{r, include=FALSE}
-BD <- read_excel(paste("BD ",today(),".xlsx", sep=""))
-BD2 <- read_excel(paste("BD2 ", today(),".xlsx",sep=""))
+
+gs4_auth()
+1
+
+BD<-read_sheet("https://docs.google.com/spreadsheets/d/1OAt-gy14M2DsW533DC7yI1H13Onvo-iXS6RGvXG8YK4/edit#gid=969329261",
+               sheet = "INTERNO", range= "INTERNO!A2:DZ")
+
+BD2<-read_sheet("https://docs.google.com/spreadsheets/d/1OAt-gy14M2DsW533DC7yI1H13Onvo-iXS6RGvXG8YK4/edit#gid=969329261",
+                sheet = "EXTERNO", range= "EXTERNO!A2:BP")
+
+BD <- BD[-1, ]
+BD2 <- BD2[-1, ]
+
+# BD <- read_excel(paste("BD ",today(),".xlsx", sep=""))
+# BD2 <- read_excel(paste("BD2 ", today(),".xlsx",sep=""))
 ```
 
 # Cotizaciones INTERNAS
@@ -130,6 +146,7 @@ Cotizaciones_liberadas_por_mes_materia <- BD1 %>%
   group_by(MES = format(LIBERACION, "%Y-%m"),Materia) %>%
   summarise(NUMCOT = sum(CANTIDAD)) %>%
   filter(!is.na(NUMCOT)) %>%
+  filter(!is.na(MES)) %>%  
   mutate(LIBERACION = as.Date(paste(MES, "01", sep = "-"))) %>%
   select(LIBERACION,Materia,NUMCOT,MES)
 
@@ -201,7 +218,7 @@ ggplot(`Solicitudes por materia`, aes(x="", y=n, fill=Materia)) +
   geom_bar(stat="identity", width=1) +
   coord_polar("y", start=0)+
    theme_void()+
-  scale_fill_manual(values = paletteer_dynamic("cartography::pastel.pal", 18))
+  scale_fill_manual(values = paletteer_dynamic("cartography::pastel.pal", 19))
 
 DT::datatable(`Solicitudes por materia` %>% arrange(desc(n)), rownames = FALSE)
 
